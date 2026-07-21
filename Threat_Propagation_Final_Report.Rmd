@@ -1,0 +1,554 @@
+---
+title: "Threat Propagation Simulation Using Hybrid ABM, DES and Markov Chain Modeling"
+author: "Anusha Bhaskar"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    code_folding: hide
+---
+
+# 1. Introduction
+
+Cybersecurity threats can propagate through interconnected computer networks when vulnerable systems are compromised. This project develops a synthetic threat propagation simulation model to study how vulnerabilities, threats, and attacks influence the spread of cyber incidents.
+
+The proposed framework combines Agent-Based Modeling (ABM), Discrete Event Simulation (DES), and probabilistic Markov state transitions to model threat propagation over time.
+
+# 2. Objectives
+
+The main objectives of this project are:
+
+- To generate a synthetic cybersecurity dataset containing 1000 records.
+- To represent multiple vulnerabilities, threats, and attack types.
+- To preprocess and classify cybersecurity risk.
+- To simulate threat propagation through an interconnected network.
+- To model changes in threat states over time.
+- To evaluate the simulation results.
+- To visualize cybersecurity threat propagation and risk patterns.
+
+# 3. Project Structure
+
+The project consists of the following major modules:
+
+1. Dataset Generation and Loading
+2. Data Preprocessing
+3. ABM and DES Threat Propagation Simulation
+4. Markov State Transition Simulation
+5. Statistical Evaluation
+6. Final Visualization
+7. Automated Report Generation
+
+# 4. Dataset Description
+
+The synthetic cybersecurity dataset contains 1000 records.
+
+The main variables include:
+
+- Record ID
+- Node ID
+- Vulnerabilities
+- Threat
+- Attack
+- Risk Score
+- Compromised Status
+
+```{r dataset-summary, echo=FALSE}
+
+data <- read.csv(
+  "C:/Users/anush/Desktop/ThreatPropagationProject/Results/Processed_Dataset.csv"
+)
+
+cat(
+  "Number of records:",
+  nrow(data)
+)
+
+cat(
+  "\nNumber of variables:",
+  ncol(data)
+)
+
+```
+
+## Dataset Summary
+
+```{r summary-table, echo=FALSE}
+
+summary(data)
+
+```
+
+# 5. Data Preprocessing
+
+The dataset was processed by checking missing values, organizing categorical variables, calculating risk-related information, and preparing the dataset for simulation.
+
+```{r preprocessing-summary, echo=FALSE}
+
+missing_values <- sum(
+  is.na(data)
+)
+
+cat(
+  "Total Missing Values:",
+  missing_values
+)
+
+```
+
+# 6. Threat Distribution
+
+The following visualization shows the distribution of different threat types in the synthetic cybersecurity dataset.
+
+```{r threat-distribution, echo=FALSE, fig.width=9, fig.height=6}
+
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+
+threat_data <- data %>%
+  count(Threat)
+
+ggplot(
+  threat_data,
+  aes(
+    x = reorder(Threat, n),
+    y = n
+  )
+) +
+
+  geom_col() +
+
+  coord_flip() +
+
+  labs(
+    title = "Cyber Threat Type Distribution",
+    x = "Threat Type",
+    y = "Number of Records"
+  ) +
+
+  theme_minimal()
+
+```
+
+# 7. Attack Distribution
+
+The following visualization presents the distribution of attack techniques represented in the dataset.
+
+```{r attack-distribution, echo=FALSE, fig.width=9, fig.height=6}
+
+attack_data <- data %>%
+  count(Attack)
+
+ggplot(
+  attack_data,
+  aes(
+    x = reorder(Attack, n),
+    y = n
+  )
+) +
+
+  geom_col() +
+
+  coord_flip() +
+
+  labs(
+    title = "Cyber Attack Distribution",
+    x = "Attack Type",
+    y = "Number of Records"
+  ) +
+
+  theme_minimal()
+
+```
+
+# 8. Risk Score Distribution
+
+Risk scores are analyzed to understand the overall risk distribution across the simulated cybersecurity environment.
+
+```{r risk-distribution, echo=FALSE, fig.width=9, fig.height=6}
+
+ggplot(
+  data,
+  aes(
+    x = Risk_Score
+  )
+) +
+
+  geom_histogram(
+    bins = 20
+  ) +
+
+  labs(
+    title = "Cybersecurity Risk Score Distribution",
+    x = "Risk Score",
+    y = "Frequency"
+  ) +
+
+  theme_minimal()
+
+```
+
+# 9. Risk Level Distribution
+
+If the processed dataset contains a `Risk_Level` column, the following section displays the risk categories.
+
+```{r risk-level, echo=FALSE, fig.width=9, fig.height=6}
+
+if ("Risk_Level" %in% names(data)) {
+
+  risk_data <- data %>%
+    count(Risk_Level)
+
+  ggplot(
+    risk_data,
+    aes(
+      x = Risk_Level,
+      y = n
+    )
+  ) +
+
+    geom_col() +
+
+    labs(
+      title = "Cybersecurity Risk Level Distribution",
+      x = "Risk Level",
+      y = "Number of Records"
+    ) +
+
+    theme_minimal()
+
+} else {
+
+  cat(
+    "Risk_Level column was not found in the processed dataset."
+  )
+
+}
+
+```
+
+# 10. Threat Propagation Simulation
+
+The ABM component represents individual network nodes as agents. The DES component models the propagation process over discrete simulation time steps.
+
+The propagation results are loaded from the Module 3 simulation.
+
+```{r propagation-data, echo=FALSE}
+
+timeline <- read.csv(
+  "C:/Users/anush/Desktop/ThreatPropagationProject/Results/Propagation_Timeline.csv"
+)
+
+```
+
+## Threat Propagation Over Time
+
+```{r propagation-plot, echo=FALSE, fig.width=10, fig.height=6}
+
+ggplot(
+  timeline,
+  aes(
+    x = Time,
+    y = Infected
+  )
+) +
+
+  geom_line(
+    linewidth = 1
+  ) +
+
+  geom_point(
+    size = 2
+  ) +
+
+  labs(
+    title = "Cyber Threat Propagation Over Time",
+    subtitle = "ABM + DES Threat Propagation Simulation",
+    x = "Simulation Time Step",
+    y = "Number of Infected Nodes"
+  ) +
+
+  theme_minimal()
+
+```
+
+# 11. Safe and Compromised Systems
+
+The following visualization compares safe and compromised systems in the original dataset.
+
+```{r compromised-analysis, echo=FALSE, fig.width=8, fig.height=6}
+
+status_data <- data %>%
+
+  count(Compromised)
+
+status_data$Status <- ifelse(
+  status_data$Compromised == 1,
+  "Compromised",
+  "Safe"
+)
+
+ggplot(
+  status_data,
+  aes(
+    x = Status,
+    y = n
+  )
+) +
+
+  geom_col() +
+
+  labs(
+    title = "Safe vs Compromised Systems",
+    x = "System Status",
+    y = "Number of Systems"
+  ) +
+
+  theme_minimal()
+
+```
+
+# 12. Markov Threat State Simulation
+
+The probabilistic state model represents cybersecurity states as:
+
+**Safe → Exposed → Compromised → Propagating → Recovered**
+
+The state history generated by Module 4 is loaded below.
+
+```{r markov-data, echo=FALSE}
+
+mcmc_history <- read.csv(
+  "C:/Users/anush/Desktop/ThreatPropagationProject/Results/MCMC_State_History.csv"
+)
+
+```
+
+## Markov State Transition Visualization
+
+```{r markov-plot, echo=FALSE, fig.width=10, fig.height=6}
+
+mcmc_long <- mcmc_history %>%
+
+  pivot_longer(
+    cols = c(
+      Safe,
+      Exposed,
+      Compromised,
+      Propagating,
+      Recovered
+    ),
+
+    names_to = "State",
+
+    values_to = "Count"
+  )
+
+ggplot(
+  mcmc_long,
+  aes(
+    x = Time,
+    y = Count,
+    group = State,
+    color = State
+  )
+) +
+
+  geom_line(
+    linewidth = 1
+  ) +
+
+  geom_point(
+    size = 1.5
+  ) +
+
+  labs(
+    title = "Markov Threat State Transition Over Time",
+    subtitle = "Evolution of Cybersecurity States During Simulation",
+    x = "Simulation Time Step",
+    y = "Number of Nodes",
+    color = "Threat State"
+  ) +
+
+  theme_minimal()
+
+```
+
+# 13. Vulnerability Distribution
+
+The following section analyzes the frequency of vulnerabilities present in the synthetic dataset.
+
+```{r vulnerability-analysis, echo=FALSE, fig.width=9, fig.height=6}
+
+vulnerability_list <- unlist(
+  strsplit(
+    data$Vulnerabilities,
+    ";"
+  )
+)
+
+vulnerability_data <- data.frame(
+  Vulnerability = vulnerability_list
+) %>%
+
+  count(Vulnerability)
+
+ggplot(
+  vulnerability_data,
+  aes(
+    x = Vulnerability,
+    y = n
+  )
+) +
+
+  geom_col() +
+
+  labs(
+    title = "Vulnerability Distribution",
+    x = "Vulnerability",
+    y = "Frequency"
+  ) +
+
+  theme_minimal()
+
+```
+
+# 14. Model Evaluation
+
+The model evaluation results generated by Module 5 are loaded below.
+
+```{r evaluation-data, echo=FALSE}
+
+evaluation <- read.csv(
+  "C:/Users/anush/Desktop/ThreatPropagationProject/Results/Evaluation_Results.csv"
+)
+
+```
+
+## Evaluation Results Table
+
+```{r evaluation-table, echo=FALSE}
+
+knitr::kable(
+  evaluation,
+  digits = 4,
+  caption = "Threat Propagation Model Evaluation Results"
+)
+
+```
+
+# 15. Evaluation Metrics Visualization
+
+The following section displays the main performance metrics.
+
+```{r evaluation-plot, echo=FALSE, fig.width=9, fig.height=6}
+
+metric_names <- c(
+  "Accuracy",
+  "Precision",
+  "Recall",
+  "Specificity",
+  "F1_Score"
+)
+
+metric_data <- evaluation %>%
+
+  filter(
+    Metric %in% metric_names
+  )
+
+ggplot(
+  metric_data,
+  aes(
+    x = Metric,
+    y = Value
+  )
+) +
+
+  geom_col() +
+
+  geom_text(
+    aes(
+      label = round(Value, 3)
+    ),
+    vjust = -0.5
+  ) +
+
+  ylim(
+    0,
+    1.1
+  ) +
+
+  labs(
+    title = "Threat Propagation Model Evaluation Metrics",
+    x = "Evaluation Metric",
+    y = "Score"
+  ) +
+
+  theme_minimal()
+
+```
+
+# 16. Statistical Analysis
+
+The statistical analysis includes mean risk score, standard deviation, Z-score, and p-value.
+
+```{r statistical-results, echo=FALSE}
+
+statistical_results <- evaluation %>%
+
+  filter(
+    Metric %in% c(
+      "Mean_Risk",
+      "SD_Risk",
+      "Z_Score",
+      "P_Value"
+    )
+  )
+
+knitr::kable(
+  statistical_results,
+  digits = 4,
+  caption = "Statistical Analysis Results"
+)
+
+```
+
+# 17. Results and Discussion
+
+The simulation demonstrates how cybersecurity threats can propagate through interconnected systems.
+
+The ABM component represents individual nodes and their cybersecurity states. The DES component models the progression of threat propagation across discrete simulation time steps. The Markov state model represents probabilistic transitions between Safe, Exposed, Compromised, Propagating, and Recovered states.
+
+The synthetic dataset allows the proposed framework to study relationships between vulnerabilities, threats, attacks, risk scores, and compromise status.
+
+The evaluation metrics provide quantitative measures for assessing the performance of the simulated threat detection and propagation model.
+
+# 18. Conclusion
+
+This project developed a synthetic cybersecurity threat propagation framework using a combination of Agent-Based Modeling, Discrete Event Simulation, and probabilistic Markov state transitions.
+
+The framework provides a structured approach for studying cybersecurity vulnerabilities, threats, attacks, risk levels, and propagation patterns.
+
+The generated visualizations provide insight into threat distributions, attack patterns, risk scores, vulnerabilities, and changes in cybersecurity states over simulation time.
+
+Future improvements can include Conditional Tabular GAN (CTGAN) based synthetic data generation, larger enterprise network topologies, real-world cybersecurity datasets, Bayesian inference, and more advanced MCMC methods.
+
+# 19. Project Outputs
+
+The project generates the following outputs:
+
+- Processed cybersecurity dataset
+- Threat propagation results
+- Threat propagation timeline
+- Markov state history
+- Final Markov state results
+- Evaluation metrics
+- Confusion matrix
+- Cybersecurity visualizations
+- Final HTML research report
+
+# 20. End of Report
+
+This report was generated using R Markdown as part of the Cybersecurity Threat Propagation Simulation project.
